@@ -57,7 +57,7 @@ export default function Dashboard() {
                            <div className="flex-shrink-0 self-start sm:self-center">
                               <button
                                  onClick={() => router.push('/dashboard/service-list')}
-                                 className="w-full sm:w-auto bg-sky-900 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg hover:bg-sky-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base font-medium shadow-sm hover:shadow-md"
+                                 className="w-full sm:w-auto bg-sky-900 text-white px-5 py-2 sm:px-7 sm:py-2 rounded-lg hover:bg-sky-700 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base font-medium shadow-sm hover:shadow-md"
                               >
                                  Manage Services
                               </button>

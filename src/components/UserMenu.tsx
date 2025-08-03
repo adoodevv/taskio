@@ -8,7 +8,7 @@ import { assets } from '@/assets/assets';
 import Link from 'next/link';
 
 export default function UserMenu() {
-   const { user, isAuthenticated, isLoading, logout } = useAuth();
+   const { user, isAuthenticated, logout } = useAuth();
    const [isOpen, setIsOpen] = useState(false);
 
    if (!user) return null;

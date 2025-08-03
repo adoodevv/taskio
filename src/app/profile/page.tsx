@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Footer from '@/components/Footer';
 import toast from 'react-hot-toast';
+import Navbar from '@/components/tasker/Navbar';
 
 export default function Profile() {
    const router = useRouter();
@@ -97,14 +98,8 @@ export default function Profile() {
 
    return (
       <ProtectedRoute>
-         <div className="min-h-screen bg-gray-50 mt-14">
-            <div className='fixed top-0 left-0 z-10 bg-blue-50/80 backdrop-blur-sm w-full flex flex-row items-center justify-between px-4 md:px-10 py-3 border-b border-gray-300'>
-               <div>
-                  <Image src="/logo.png" alt="Taskio Logo" width={300} height={300} className="w-30 h-auto" />
-               </div>
-               <button className='bg-sky-900 hover:bg-sky-800 text-white px-5 py-2 sm:px-7 sm:py-2 rounded-lg text-xs sm:text-sm cursor-pointer' onClick={() => router.push('/')}>Go To Home</button>
-            </div>
-
+         <Navbar />
+         <div className="min-h-screen bg-gray-50">
             {/* Header Image Section */}
             <div className='relative w-full h-[15vh] md:h-[30vh]'>
                {localImages.headerImage ? (

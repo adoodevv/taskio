@@ -12,15 +12,19 @@ interface ServiceFormProps {
 }
 
 export default function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
-   const { user } = useAuth();
+   const { user, token } = useAuth();
    const api = useApi();
    const [isSubmitting, setIsSubmitting] = useState(false);
+   const [createdServiceId, setCreatedServiceId] = useState<string | null>(null);
+   const [tempImageFile, setTempImageFile] = useState<File | null>(null);
+   const [tempImagePreview, setTempImagePreview] = useState<string | null>(null);
 
    const [formData, setFormData] = useState({
       title: '',
       category: '',
       tags: [] as string[],
       description: '',
+      serviceImage: '',
       pricingModel: 'hourly' as 'hourly' | 'fixed' | 'package',
       priceRange: {
          min: 0,
@@ -101,16 +105,16 @@ export default function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
    };
 
    const addArrayItem = (section: string, field: string, value: string) => {
-      if (value.trim()) {
-         setFormData(prev => {
-            // Handle direct arrays (like tags)
-            if (section === field) {
-               return {
-                  ...prev,
-                  [section]: [...(prev as any)[section], value.trim()]
-               };
-            }
+      if (!value.trim()) return;
 
+      setFormData(prev => {
+         if (section === field) {
+            // Handle direct arrays (like tags)
+            return {
+               ...prev,
+               [section]: [...(prev as any)[section], value.trim()]
+            };
+         } else {
             // Handle nested object arrays
             return {
                ...prev,
@@ -119,8 +123,8 @@ export default function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
                   [field]: [...(prev as any)[section][field], value.trim()]
                }
             };
-         });
-      }
+         }
+      });
    };
 
    const removeArrayItem = (section: string, field: string, index: number) => {
@@ -161,20 +165,119 @@ export default function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
       });
    };
 
+   const handleImageFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+         // Store the file temporarily
+         setTempImageFile(file);
+
+         // Create preview
+         const reader = new FileReader();
+         reader.onload = (e) => {
+            setTempImagePreview(e.target?.result as string);
+         };
+         reader.readAsDataURL(file);
+      }
+   };
+
+   const handleRemoveImage = () => {
+      setTempImageFile(null);
+      setTempImagePreview(null);
+      setFormData(prev => ({
+         ...prev,
+         serviceImage: ''
+      }));
+   };
+
+   const uploadServiceImage = async (serviceId: string, file: File) => {
+      try {
+         // Check if token exists
+         if (!token) {
+            throw new Error('Authentication token not found. Please login again.');
+         }
+
+         const formData = new FormData();
+         formData.append('image', file);
+         formData.append('imageType', 'serviceImage');
+         formData.append('serviceId', serviceId);
+
+         const response = await fetch('/api/user/upload-image', {
+            method: 'POST',
+            headers: {
+               'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+         });
+
+         if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Upload failed');
+         }
+
+         const data = await response.json();
+         return data.imageUrl;
+      } catch (error) {
+         console.error('Image upload error:', error);
+         throw error;
+      }
+   };
+
    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       setIsSubmitting(true);
 
       try {
-         await api.post('/api/services', formData);
+         // Create service first
+         const response = await api.post('/api/services', formData);
+         const serviceId = response.service._id;
+         setCreatedServiceId(serviceId);
+
+         // Upload image if there's a temporary file
+         if (tempImageFile) {
+            try {
+               const imageUrl = await uploadServiceImage(serviceId, tempImageFile);
+
+               // Update service with image URL
+               const updateResponse = await fetch(`/api/services/${serviceId}`, {
+                  method: 'PATCH',
+                  headers: {
+                     'Content-Type': 'application/json',
+                     'Authorization': `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                     serviceImage: imageUrl
+                  }),
+               });
+
+               if (!updateResponse.ok) {
+                  const errorData = await updateResponse.json();
+                  throw new Error(errorData.error || 'Failed to update service');
+               }
+
+               // Clear temporary image data
+               setTempImageFile(null);
+               setTempImagePreview(null);
+            } catch (imageError) {
+               console.error('Failed to upload image:', imageError);
+               toast.error('Service created but image upload failed. You can add an image later.');
+            }
+         }
+
          toast.success('Service created successfully!');
-         onSuccess?.();
+
+         // Add a small delay to ensure database update is complete
+         setTimeout(() => {
+            onSuccess?.();
+         }, 1000);
       } catch (error) {
+         console.error('Service creation error:', error);
          toast.error('Failed to create service. Please try again.');
       } finally {
          setIsSubmitting(false);
       }
    };
+
+   const displayImage = tempImagePreview || formData.serviceImage;
 
    return (
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
@@ -192,6 +295,77 @@ export default function ServiceForm({ onSuccess, onCancel }: ServiceFormProps) {
             {/* Basic Service Details */}
             <div className="bg-gray-50 p-6 rounded-lg">
                <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Service Details</h3>
+
+               {/* Service Image Upload */}
+               <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                     Service Image
+                  </label>
+                  <div className="flex justify-center">
+                     <div className="relative group w-full max-w-md">
+                        {/* Image Container */}
+                        <div
+                           className={`
+                              relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100
+                              aspect-video w-full max-w-md
+                              rounded-xl
+                              ring-2 ring-gray-200
+                              transition-all duration-300 ease-in-out cursor-pointer
+                              ${displayImage ? 'shadow-md' : 'shadow-sm'}
+                           `}
+                           onClick={() => document.getElementById('service-image-input')?.click()}
+                        >
+                           {/* Background Image */}
+                           {displayImage && (
+                              <img
+                                 src={displayImage}
+                                 alt="Service preview"
+                                 className="object-cover w-full h-full transition-transform duration-300 rounded-xl"
+                              />
+                           )}
+
+                           {/* Default State */}
+                           {!displayImage && (
+                              <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
+                                 <div className="bg-sky-50 rounded-full p-4 mb-3 border-2 border-dashed border-sky-200">
+                                    <FaPlus className="h-6 w-6 text-sky-500" />
+                                 </div>
+                                 <p className="text-sm font-medium text-gray-700 text-center">
+                                    Click to upload service image
+                                 </p>
+                                 <p className="text-xs text-gray-500 mt-1 text-center">
+                                    Max 5MB
+                                 </p>
+                              </div>
+                           )}
+                        </div>
+
+                        {/* Remove Button */}
+                        {displayImage && (
+                           <button
+                              type="button"
+                              onClick={handleRemoveImage}
+                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 hover:scale-110 transition-all duration-200 shadow-lg hover:shadow-xl"
+                              title="Remove image"
+                           >
+                              <FaTimes className="h-3 w-3" />
+                           </button>
+                        )}
+
+                        {/* Hidden File Input */}
+                        <input
+                           id="service-image-input"
+                           type="file"
+                           accept="image/jpeg,image/jpg,image/png,image/webp"
+                           onChange={handleImageFileSelect}
+                           className="hidden"
+                        />
+                     </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                     Upload an image that represents your service. This will be displayed on your service card.
+                  </p>
+               </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>

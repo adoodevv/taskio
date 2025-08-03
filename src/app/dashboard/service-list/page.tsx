@@ -5,9 +5,10 @@ import { useAuth } from '@/context/AuthContext';
 import { useApi } from '@/hooks/useApi';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ServiceForm from '@/components/ServiceForm';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaTimes, FaTools, FaDollarSign, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaExclamationTriangle, FaTools, FaEye, FaEyeSlash } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface Service {
    _id: string;
@@ -15,6 +16,7 @@ interface Service {
    category: string;
    tags: string[];
    description: string;
+   serviceImage?: string;
    pricingModel: 'hourly' | 'fixed' | 'package';
    priceRange: {
       min: number;
@@ -64,6 +66,11 @@ export default function ServiceList() {
    const [isLoading, setIsLoading] = useState(true);
    const [showForm, setShowForm] = useState(false);
    const [selectedService, setSelectedService] = useState<Service | null>(null);
+   const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean; serviceId: string; serviceTitle: string }>({
+      show: false,
+      serviceId: '',
+      serviceTitle: ''
+   });
 
    // Redirect non-taskio users to profile page
    useEffect(() => {
@@ -112,16 +119,24 @@ export default function ServiceList() {
       setShowForm(true);
    };
 
-   const handleDeleteService = async (serviceId: string) => {
-      if (window.confirm('Are you sure you want to delete this service?')) {
-         try {
-            await api.delete(`/api/services/${serviceId}`);
-            toast.success('Service deleted successfully');
-            fetchServices();
-         } catch (error) {
-            toast.error('Failed to delete service');
-         }
+   const handleDeleteService = async (serviceId: string, serviceTitle: string) => {
+      setDeleteConfirm({ show: true, serviceId, serviceTitle });
+   };
+
+   const confirmDelete = async () => {
+      try {
+         await api.delete(`/api/services/${deleteConfirm.serviceId}`);
+         toast.success('Service deleted successfully');
+         fetchServices();
+      } catch (error) {
+         toast.error('Failed to delete service');
+      } finally {
+         setDeleteConfirm({ show: false, serviceId: '', serviceTitle: '' });
       }
+   };
+
+   const cancelDelete = () => {
+      setDeleteConfirm({ show: false, serviceId: '', serviceTitle: '' });
    };
 
    const toggleServiceStatus = async (serviceId: string, currentStatus: boolean) => {
@@ -150,7 +165,7 @@ export default function ServiceList() {
    // Show loading while checking role or if user is not a taskio
    if (!user || user.role !== 'taskio') {
       return (
-         <div className="min-h-screen flex items-center justify-center">
+         <div className="min-h-screen flex items-center justify-center w-full">
             <div className="text-center">
                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-900 mx-auto mb-4"></div>
                <p className="text-gray-600">Loading...</p>
@@ -213,6 +228,40 @@ export default function ServiceList() {
                   </div>
                )}
 
+               {/* Delete Confirmation Modal */}
+               {deleteConfirm.show && (
+                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                     <div className="bg-white rounded-lg max-w-md w-full p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                           <div className="flex-shrink-0">
+                              <FaExclamationTriangle className="h-6 w-6 text-red-500" />
+                           </div>
+                           <div>
+                              <h3 className="text-lg font-semibold text-gray-900">Delete Service</h3>
+                           </div>
+                        </div>
+                        <p className="text-gray-600 mb-6">
+                           Are you sure you want to delete <span className="font-semibold">"{deleteConfirm.serviceTitle}"</span>?
+                           This action cannot be undone.
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                           <button
+                              onClick={cancelDelete}
+                              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                           >
+                              Cancel
+                           </button>
+                           <button
+                              onClick={confirmDelete}
+                              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                           >
+                              Delete
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+               )}
+
                {/* Services Grid */}
                {services.length === 0 ? (
                   <div className="text-center py-12">
@@ -230,6 +279,20 @@ export default function ServiceList() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                      {services.map((service) => (
                         <div key={service._id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                           {/* Service Image */}
+                           {service.serviceImage && (
+                              <div className="relative w-full h-48">
+                                 <Image
+                                    src={service.serviceImage}
+                                    alt={service.title}
+                                    width={500}
+                                    height={500}
+                                    priority
+                                    className="object-cover w-full h-48"
+                                 />
+                              </div>
+                           )}
+
                            {/* Service Header */}
                            <div className="p-4 sm:p-6 border-b border-gray-200">
                               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -331,7 +394,7 @@ export default function ServiceList() {
                                        <span className="hidden sm:inline">Edit</span>
                                     </button>
                                     <button
-                                       onClick={() => handleDeleteService(service._id)}
+                                       onClick={() => handleDeleteService(service._id, service.title)}
                                        className="text-red-600 hover:scale-105 transition-all duration-300 text-sm font-medium flex items-center gap-1"
                                     >
                                        <FaTrash className="h-4 w-4" />

@@ -3,7 +3,8 @@ import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 
 interface UploadOptions {
-   imageType: 'profilePicture' | 'headerImage';
+   imageType: 'profilePicture' | 'headerImage' | 'serviceImage';
+   serviceId?: string; // Optional serviceId for service images
    onSuccess?: (imageUrl: string) => void;
 }
 
@@ -13,7 +14,7 @@ export function useImageUpload() {
    const [uploadProgress, setUploadProgress] = useState(0);
 
    const uploadImage = async (file: File, options: UploadOptions) => {
-      const { imageType, onSuccess } = options;
+      const { imageType, serviceId, onSuccess } = options;
 
       if (!file) {
          toast.error('Please select a file');
@@ -40,6 +41,12 @@ export function useImageUpload() {
          return;
       }
 
+      // Validate serviceId for service images
+      if (imageType === 'serviceImage' && !serviceId) {
+         toast.error('Service ID is required for service images');
+         return;
+      }
+
       setIsUploading(true);
       setUploadProgress(0);
 
@@ -47,6 +54,10 @@ export function useImageUpload() {
          const formData = new FormData();
          formData.append('image', file);
          formData.append('imageType', imageType);
+
+         if (serviceId) {
+            formData.append('serviceId', serviceId);
+         }
 
          const headers: Record<string, string> = {
             'Authorization': `Bearer ${token}`,

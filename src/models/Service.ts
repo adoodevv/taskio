@@ -6,6 +6,7 @@ export interface IService extends mongoose.Document {
    category: string;
    tags: string[];
    description: string;
+   serviceImage?: string; // Add service image field
    pricingModel: 'hourly' | 'fixed' | 'package';
    priceRange: {
       min: number;
@@ -74,6 +75,10 @@ const serviceSchema = new mongoose.Schema<IService>(
          required: [true, 'Service description is required'],
          trim: true,
          maxlength: [1000, 'Description cannot be more than 1000 characters'],
+      },
+      serviceImage: {
+         type: String,
+         trim: true,
       },
       pricingModel: {
          type: String,

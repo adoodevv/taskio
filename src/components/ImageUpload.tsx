@@ -7,7 +7,8 @@ import Image from 'next/image';
 
 interface ImageUploadProps {
    currentImage?: string;
-   imageType: 'profilePicture' | 'headerImage';
+   imageType: 'profilePicture' | 'headerImage' | 'serviceImage';
+   serviceId?: string; // Optional serviceId for service images
    onImageUploaded: (imageUrl: string) => void;
    className?: string;
    aspectRatio?: 'square' | 'wide';
@@ -17,6 +18,7 @@ interface ImageUploadProps {
 export default function ImageUpload({
    currentImage,
    imageType,
+   serviceId,
    onImageUploaded,
    className = '',
    aspectRatio = 'square',
@@ -50,6 +52,7 @@ export default function ImageUpload({
          // Upload image
          uploadImage(file, {
             imageType,
+            serviceId,
             onSuccess: (imageUrl) => {
                onImageUploaded(imageUrl);
                setPreview(null);

@@ -6,12 +6,13 @@ import { verifyToken, extractTokenFromHeader } from '@/lib/auth';
 // GET - Fetch a specific service
 export async function GET(
    request: NextRequest,
-   { params }: { params: { id: string } }
+   { params }: { params: Promise<{ id: string }> }
 ) {
    try {
       await connectDB();
 
-      const service = await Service.findById(params.id);
+      const { id } = await params;
+      const service = await Service.findById(id);
       if (!service) {
          return NextResponse.json(
             { error: 'Service not found' },
@@ -39,7 +40,7 @@ export async function GET(
 // PATCH - Update a service
 export async function PATCH(
    request: NextRequest,
-   { params }: { params: { id: string } }
+   { params }: { params: Promise<{ id: string }> }
 ) {
    try {
       await connectDB();
@@ -72,39 +73,23 @@ export async function PATCH(
          );
       }
 
+      const { id: serviceId } = await params;
       const updateData = await request.json();
 
-      // Find the service and verify ownership
-      const service = await Service.findById(params.id);
-      if (!service) {
+      // Verify the service belongs to the user
+      const existingService = await Service.findOne({ _id: serviceId, taskioId: decoded.userId });
+      if (!existingService) {
          return NextResponse.json(
-            { error: 'Service not found' },
+            { error: 'Service not found or access denied' },
             { status: 404 }
          );
       }
 
-      if (service.taskioId.toString() !== decoded.userId) {
-         return NextResponse.json(
-            { error: 'You can only update your own services' },
-            { status: 403 }
-         );
-      }
-
-      // Validate price range if provided
-      if (updateData.priceRange) {
-         if (updateData.priceRange.min > updateData.priceRange.max) {
-            return NextResponse.json(
-               { error: 'Minimum price cannot be greater than maximum price' },
-               { status: 400 }
-            );
-         }
-      }
-
       // Update the service
       const updatedService = await Service.findByIdAndUpdate(
-         params.id,
+         serviceId,
          updateData,
-         { new: true, runValidators: true }
+         { new: true }
       );
 
       return NextResponse.json(
@@ -127,7 +112,7 @@ export async function PATCH(
 // DELETE - Delete a service
 export async function DELETE(
    request: NextRequest,
-   { params }: { params: { id: string } }
+   { params }: { params: Promise<{ id: string }> }
 ) {
    try {
       await connectDB();
@@ -160,24 +145,19 @@ export async function DELETE(
          );
       }
 
-      // Find the service and verify ownership
-      const service = await Service.findById(params.id);
-      if (!service) {
+      const { id: serviceId } = await params;
+
+      // Verify the service belongs to the user
+      const existingService = await Service.findOne({ _id: serviceId, taskioId: decoded.userId });
+      if (!existingService) {
          return NextResponse.json(
-            { error: 'Service not found' },
+            { error: 'Service not found or access denied' },
             { status: 404 }
          );
       }
 
-      if (service.taskioId.toString() !== decoded.userId) {
-         return NextResponse.json(
-            { error: 'You can only delete your own services' },
-            { status: 403 }
-         );
-      }
-
       // Delete the service
-      await Service.findByIdAndDelete(params.id);
+      await Service.findByIdAndDelete(serviceId);
 
       return NextResponse.json(
          {

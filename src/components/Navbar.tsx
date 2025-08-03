@@ -7,7 +7,7 @@ import { FiMenu } from 'react-icons/fi';
 import { IoMdClose } from "react-icons/io";
 import { assets } from '@/assets/assets';
 import { useAuth } from '@/context/AuthContext';
-import { FaUser, FaSignOutAlt, FaCaretDown } from 'react-icons/fa';
+import { FaSignOutAlt } from 'react-icons/fa';
 import UserMenu from './UserMenu';
 
 const Navbar = () => {

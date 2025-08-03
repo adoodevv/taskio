@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import Service from '@/models/Service';
 import { verifyToken, extractTokenFromHeader } from '@/lib/auth';
 import { uploadImage } from '@/lib/cloudinary';
 
@@ -33,12 +34,13 @@ export async function POST(request: NextRequest) {
       const formData = await request.formData();
       const imageType = formData.get('imageType') as string;
       const imageFile = formData.get('image') as File;
+      const serviceId = formData.get('serviceId') as string; // For service images
 
       if (!imageType || !imageFile) {
          return NextResponse.json({ error: 'Image type and file are required' }, { status: 400 });
       }
 
-      if (!['profilePicture', 'headerImage'].includes(imageType)) {
+      if (!['profilePicture', 'headerImage', 'serviceImage'].includes(imageType)) {
          return NextResponse.json({ error: 'Invalid image type' }, { status: 400 });
       }
 
@@ -63,21 +65,48 @@ export async function POST(request: NextRequest) {
       const folder = `taskio/${imageType}`;
       const imageUrl = await uploadImage(base64, folder);
 
-      // Update user in database
-      const updateData: any = {};
-      updateData[imageType] = imageUrl;
+      // Update database based on image type
+      if (imageType === 'serviceImage') {
+         // For service images, we need a serviceId
+         if (!serviceId) {
+            return NextResponse.json({ error: 'Service ID is required for service images' }, { status: 400 });
+         }
 
-      const updatedUser = await User.findByIdAndUpdate(
-         decoded.userId,
-         updateData,
-         { new: true, select: '-password' }
-      );
+         // Verify the service belongs to the user
+         const service = await Service.findOne({ _id: serviceId, taskioId: decoded.userId });
+         if (!service) {
+            return NextResponse.json({ error: 'Service not found or access denied' }, { status: 404 });
+         }
 
-      return NextResponse.json({
-         message: 'Image uploaded successfully',
-         user: updatedUser,
-         imageUrl
-      });
+         // Update service with image
+         const updatedService = await Service.findByIdAndUpdate(
+            serviceId,
+            { serviceImage: imageUrl },
+            { new: true }
+         );
+
+         return NextResponse.json({
+            message: 'Service image uploaded successfully',
+            service: updatedService,
+            imageUrl
+         });
+      } else {
+         // Update user profile/header image
+         const updateData: any = {};
+         updateData[imageType] = imageUrl;
+
+         const updatedUser = await User.findByIdAndUpdate(
+            decoded.userId,
+            updateData,
+            { new: true, select: '-password' }
+         );
+
+         return NextResponse.json({
+            message: 'Image uploaded successfully',
+            user: updatedUser,
+            imageUrl
+         });
+      }
 
    } catch (error) {
       console.error('Upload image error:', error);
