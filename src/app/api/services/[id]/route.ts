@@ -12,7 +12,10 @@ export async function GET(
       await connectDB();
 
       const { id } = await params;
-      const service = await Service.findById(id);
+      const service = await Service.findById(id)
+         .populate('taskioId', 'name profilePicture email')
+         .lean();
+
       if (!service) {
          return NextResponse.json(
             { error: 'Service not found' },
@@ -20,10 +23,24 @@ export async function GET(
          );
       }
 
+      // Type assertion to handle the populated taskioId
+      const serviceWithPopulatedTaskio = service as any;
+
+      // Transform the data to include taskio information
+      const transformedService = {
+         ...serviceWithPopulatedTaskio,
+         taskio: {
+            _id: serviceWithPopulatedTaskio.taskioId._id,
+            name: serviceWithPopulatedTaskio.taskioId.name,
+            profilePicture: serviceWithPopulatedTaskio.taskioId.profilePicture,
+            email: serviceWithPopulatedTaskio.taskioId.email
+         }
+      };
+
       return NextResponse.json(
          {
             message: 'Service fetched successfully',
-            service
+            service: transformedService
          },
          { status: 200 }
       );

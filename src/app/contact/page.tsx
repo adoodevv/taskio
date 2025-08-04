@@ -37,7 +37,7 @@ const Contact = () => {
    return (
       <div>
          <Navbar />
-         <div className='relative w-full h-[60vh]'>
+         <div className='relative w-full h-[40vh] md:h-[60vh]'>
             <Image
                src="/contact.jpg"
                alt="About"
@@ -46,7 +46,7 @@ const Contact = () => {
                priority
             />
             <div className='absolute top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center'>
-               <h1 className='text-white text-4xl font-bold'>Contact Us</h1>
+               <h1 className='text-white text-2xl md:text-4xl font-bold'>Contact Us</h1>
             </div>
          </div>
          <div className='py-16 px-4 max-w-7xl mx-auto'>

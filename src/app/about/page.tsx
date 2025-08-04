@@ -16,12 +16,32 @@ const team = [
    {
       name: 'Fazl Maltiti Yahaya Froko',
       role: 'Senior UI/UX Designer',
-      image: '/team/temiloluwa.png',
+      image: '/team/fazl.jpeg',
    },
    {
       name: 'Eshun Papa Kojo Afoa',
       role: 'Junior Backend Developer',
-      image: '/team/temiloluwa.png',
+      image: '/team/eshun.jpeg',
+   },
+   {
+      name: 'Bregaitha Nhyira Agyekum',
+      role: 'Project Manager',
+      image: '/user.png',
+   },
+   {
+      name: 'Asuoko Reginald',
+      role: 'Database Administrator',
+      image: '/user.png',
+   },
+   {
+      name: 'Sarfo Nana Kofi Asante',
+      role: 'DevOps Engineer',
+      image: '/user.png',
+   },
+   {
+      name: 'Castel David Kwame',
+      role: 'Database Administrator',
+      image: '/user.png',
    }
 ]
 
@@ -29,7 +49,7 @@ const About = () => {
    return (
       <div>
          <Navbar />
-         <div className='relative w-full h-[60vh]'>
+         <div className='relative w-full h-[40vh] md:h-[60vh]'>
             <Image
                src="/about.jpg"
                alt="About"
@@ -38,7 +58,7 @@ const About = () => {
                priority
             />
             <div className='absolute top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center'>
-               <h1 className='text-white text-4xl font-bold'>About Us</h1>
+               <h1 className='text-white text-2xl md:text-4xl font-bold'>About Us</h1>
             </div>
          </div>
          <div className='py-16 px-4 max-w-7xl mx-auto'>

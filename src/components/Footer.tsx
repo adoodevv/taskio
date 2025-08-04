@@ -34,10 +34,10 @@ const Footer = () => {
                   <h2 className="font-medium text-gray-900 mb-5">Discover</h2>
                   <ul className="text-sm space-y-2 text-gray-500">
                      <li>
-                        <a className="hover:underline transition" href="/become-a-taskio">Become a Taskio</a>
+                        <a className="hover:underline transition" href="/auth">Become a Taskio</a>
                      </li>
                      <li>
-                        <a className="hover:underline transition" href="#">Services Nearby</a>
+                        <a className="hover:underline transition" href="/services">Services Nearby</a>
                      </li>
                      <li>
                         <a className="hover:underline transition" href="/services">All Services</a>
