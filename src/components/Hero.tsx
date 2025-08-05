@@ -52,6 +52,46 @@ const Hero = () => {
    const [showResults, setShowResults] = useState(false);
    const searchRef = useRef<HTMLDivElement>(null);
 
+   // Dynamic hero text animation
+   const [currentTextIndex, setCurrentTextIndex] = useState(0);
+   const [isAnimating, setIsAnimating] = useState(false);
+
+   const heroTexts = [
+      {
+         main: "Book",
+         highlight: "trusted",
+         suffix: "help for campus services"
+      },
+      {
+         main: "Find",
+         highlight: "skilled",
+         suffix: "students for your tasks"
+      },
+      {
+         main: "Get",
+         highlight: "quality",
+         suffix: "services from peers"
+      },
+      {
+         main: "Connect with",
+         highlight: "talented",
+         suffix: "campus professionals"
+      }
+   ];
+
+   // Text animation effect
+   useEffect(() => {
+      const interval = setInterval(() => {
+         setIsAnimating(true);
+         setTimeout(() => {
+            setCurrentTextIndex((prev) => (prev + 1) % heroTexts.length);
+            setIsAnimating(false);
+         }, 300); // Half of the animation duration
+      }, 4000); // Changed from 2000 to 4000 (4 seconds)
+
+      return () => clearInterval(interval);
+   }, [heroTexts.length]);
+
    // Close search results when clicking outside
    useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
@@ -132,9 +172,16 @@ const Hero = () => {
          </div>
 
          <div className='text-center max-w-2xl z-10 px-4'>
-            <h1 className='text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 sm:mb-8'>
-               Book <span className='text-sky-500'>trusted</span> help for campus services
-            </h1>
+            <div className="relative h-24 sm:h-28 md:h-32 mb-6 sm:mb-8 overflow-hidden">
+               <h1
+                  className={`text-4xl sm:text-5xl md:text-6xl font-bold text-white transition-transform duration-600 ease-in-out ${isAnimating ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'
+                     }`}
+               >
+                  {heroTexts[currentTextIndex].main}{' '}
+                  <span className='text-sky-500'>{heroTexts[currentTextIndex].highlight}</span>{' '}
+                  {heroTexts[currentTextIndex].suffix}
+               </h1>
+            </div>
 
             {/* Search Form */}
             <div className="relative w-full max-w-xl mx-auto" ref={searchRef}>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { FaUser, FaSignOutAlt, FaCaretDown } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt, FaCaretDown, FaCalendar } from 'react-icons/fa';
 import Image from 'next/image';
 import { assets } from '@/assets/assets';
 import Link from 'next/link';
@@ -58,12 +58,21 @@ export default function UserMenu() {
                   </div>
                   <p className="text-xs text-sky-600 capitalize">{user.role}</p>
                </div>
-               <div>
+               <div className='flex flex-col'>
                   {isAuthenticated && (
-                     <Link href="/profile" className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                        <FaUser />
-                        My Profile
-                     </Link>
+                     <>
+                        <Link href="/profile" className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                           <FaUser />
+                           My Profile
+                        </Link>
+                        <Link
+                           href={user.role === 'seeker' ? "/my-bookings" : "/dashboard/bookings"}
+                           className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
+                           <FaCalendar />
+                           My Bookings
+                        </Link>
+                     </>
                   )}
                </div>
 

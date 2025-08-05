@@ -13,6 +13,12 @@
   }
 }
 
+@layer utilities {
+  .duration-600 {
+    transition-duration: 600ms;
+  }
+}
+
 ::-webkit-scrollbar {
   display: none;
 }
