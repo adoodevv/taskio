@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
-import { hashPassword } from '@/lib/auth';
+import { hashPassword, generateToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
    try {
@@ -53,6 +53,9 @@ export async function POST(request: NextRequest) {
 
       await user.save();
 
+      // Generate JWT token
+      const token = generateToken(user);
+
       // Return user data without password
       const userResponse = {
          id: user._id,
@@ -67,7 +70,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
          {
             message: 'User created successfully',
-            user: userResponse
+            user: userResponse,
+            token
          },
          { status: 201 }
       );

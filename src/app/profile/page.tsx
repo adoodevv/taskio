@@ -285,7 +285,7 @@ export default function Profile() {
                                        if (user?.role === 'taskio') {
                                           router.push('/dashboard/service-list');
                                        } else {
-                                          router.push('/bookings');
+                                          router.push('/my-bookings');
                                        }
                                     }}
                                  >

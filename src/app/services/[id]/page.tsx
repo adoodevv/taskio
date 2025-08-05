@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import Image from 'next/image';
-import { FaMapMarkerAlt, FaClock, FaDollarSign, FaStar, FaCheck, FaPhone, FaEnvelope, FaCalendar, FaUser, FaTag, FaTools, FaShieldAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 interface Taskio {
@@ -353,7 +352,7 @@ const ServiceDetail = () => {
                            </div>
 
                            <button
-                              onClick={() => setShowBookingModal(true)}
+                              onClick={() => router.push(`/book-service/${service._id}`)}
                               className="w-full bg-sky-900 text-white py-3 rounded-lg hover:bg-sky-800 transition-colors font-medium mb-4"
                            >
                               Book Now

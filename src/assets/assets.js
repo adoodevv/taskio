@@ -1,9 +1,11 @@
 import search_icon from "./search_icon.svg";
 import user_icon from "./user_icon.svg";
+import checkmark from "./checkmark.png";
 
 export const assets = {
    search_icon,
    user_icon,
+   checkmark,
 }
 
 export const HomeIcon = () => (
