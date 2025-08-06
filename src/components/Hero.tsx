@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { FaSearch, FaMapMarkerAlt, FaDollarSign, FaClock } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaDollarSign, FaClock } from 'react-icons/fa';
 
 interface Taskio {
    _id: string;
@@ -86,8 +86,8 @@ const Hero = () => {
          setTimeout(() => {
             setCurrentTextIndex((prev) => (prev + 1) % heroTexts.length);
             setIsAnimating(false);
-         }, 300); // Half of the animation duration
-      }, 4000); // Changed from 2000 to 4000 (4 seconds)
+         }, 300);
+      }, 4000);
 
       return () => clearInterval(interval);
    }, [heroTexts.length]);

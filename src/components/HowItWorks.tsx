@@ -4,7 +4,7 @@ import React from 'react'
 const HowItWorks = () => {
    return (
       <div className="bg-blue-50">
-         <div className="relative max-w-6xl mx-auto py-6 sm:py-10 px-2 sm:px-0 flex flex-col lg:block">
+         <div className="relative max-w-6xl mx-auto py-6 sm:py-10 px-4 flex flex-col lg:block">
             <Image
                src="/how-it-works.jpg"
                alt="How It Works"

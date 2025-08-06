@@ -9,7 +9,7 @@ interface ImageUploadProps {
    currentImage?: string;
    imageType: 'profilePicture' | 'headerImage' | 'serviceImage';
    serviceId?: string; // Optional serviceId for service images
-   onImageUploaded: (imageUrl: string) => void;
+   onFileSelected: (file: File | null, previewUrl: string | null) => void;
    className?: string;
    aspectRatio?: 'square' | 'wide';
    size?: 'small' | 'medium' | 'large';
@@ -18,15 +18,15 @@ interface ImageUploadProps {
 export default function ImageUpload({
    currentImage,
    imageType,
-   serviceId,
-   onImageUploaded,
+   serviceId, // unused now
+   onFileSelected,
    className = '',
    aspectRatio = 'square',
    size = 'medium'
 }: ImageUploadProps) {
    const [preview, setPreview] = useState<string | null>(null);
+   const [selectedFile, setSelectedFile] = useState<File | null>(null);
    const fileInputRef = useRef<HTMLInputElement>(null);
-   const { uploadImage, isUploading, uploadProgress } = useImageUpload();
 
    const sizeClasses = {
       small: 'w-16 h-16 sm:w-20 sm:h-20',
@@ -46,32 +46,28 @@ export default function ImageUpload({
          const reader = new FileReader();
          reader.onload = (e) => {
             setPreview(e.target?.result as string);
+            onFileSelected(file, e.target?.result as string);
          };
          reader.readAsDataURL(file);
-
-         // Upload image
-         uploadImage(file, {
-            imageType,
-            serviceId,
-            onSuccess: (imageUrl) => {
-               onImageUploaded(imageUrl);
-               setPreview(null);
-            }
-         });
+         setSelectedFile(file);
+      } else {
+         setPreview(null);
+         setSelectedFile(null);
+         onFileSelected(null, null);
       }
    };
 
    const handleClick = () => {
-      if (!isUploading) {
-         fileInputRef.current?.click();
-      }
+      fileInputRef.current?.click();
    };
 
    const handleRemoveImage = () => {
       setPreview(null);
+      setSelectedFile(null);
       if (fileInputRef.current) {
          fileInputRef.current.value = '';
       }
+      onFileSelected(null, null);
    };
 
    const displayImage = preview || currentImage;
@@ -87,7 +83,6 @@ export default function ImageUpload({
                ${isProfilePicture ? 'rounded-full' : 'rounded-xl'}
                ${sizeClasses[size]}
                ring-2 ring-gray-200
-               ${isUploading ? 'opacity-75' : ''}
                transition-all duration-300 ease-in-out cursor-pointer
                ${displayImage ? 'shadow-md' : 'shadow-sm'}
             `}
@@ -103,18 +98,8 @@ export default function ImageUpload({
                />
             )}
 
-            {/* Upload Progress Bar */}
-            {isUploading && (
-               <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200">
-                  <div
-                     className="h-full bg-gradient-to-r from-sky-500 to-blue-600 transition-all duration-300 ease-out rounded-r-full"
-                     style={{ width: `${uploadProgress}%` }}
-                  />
-               </div>
-            )}
-
             {/* Default State */}
-            {!displayImage && !isUploading && (
+            {!displayImage && (
                <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
                   <div className="bg-sky-50 rounded-full p-2 sm:p-3 md:p-4 mb-2 sm:mb-3 border-2 border-dashed border-sky-200">
                      <FaUpload className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-sky-500" />
@@ -127,15 +112,10 @@ export default function ImageUpload({
                   </p>
                </div>
             )}
-
-            {/* Shimmer effect for loading state */}
-            {isUploading && (
-               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
-            )}
          </div>
 
          {/* Remove Button */}
-         {displayImage && !isUploading && (
+         {displayImage && (
             <button
                type="button"
                onClick={handleRemoveImage}
@@ -154,7 +134,6 @@ export default function ImageUpload({
             accept="image/jpeg,image/jpg,image/png,image/webp"
             onChange={handleFileSelect}
             className="hidden"
-            disabled={isUploading}
          />
       </div>
    );

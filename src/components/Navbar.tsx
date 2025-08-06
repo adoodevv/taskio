@@ -17,11 +17,11 @@ const Navbar = () => {
    return (
       <header className="border-b border-gray-300 text-black z-20 fixed top-0 left-0 right-0 bg-blue-50/80 backdrop-blur-sm">
          <div className="container relative mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-            <div className='flex items-center justify-center gap-6'>
+            <div className='flex items-center justify-center gap-4 md:gap-6'>
                <Link href="/">
-                  <Image src="/logo.png" alt="Taskio Logo" width={300} height={300} className="w-30 h-auto" />
+                  <Image src="/logo.png" alt="Taskio Logo" width={300} height={300} className="w-24 md:w-28 lg:w-30 h-auto" />
                </Link>
-               <nav className="hidden md:flex items-center gap-4 lg:gap-8 max-md:hidden">
+               <nav className="hidden lg:flex items-center gap-4 xl:gap-8">
                   <Link href="/services" className='hover:translate-y-[-2px] transition duration-300'>
                      Services
                   </Link>
@@ -40,13 +40,13 @@ const Navbar = () => {
                </nav>
             </div>
 
-            <div className='flex items-center gap-4'>
-               <div className='hidden md:flex items-center gap-4'>
+            <div className='flex items-center gap-2 md:gap-4'>
+               <div className='hidden lg:flex items-center gap-4'>
                   <Image className="w-5 h-5" src={assets.search_icon} alt="search icon" />
 
                   {/* Show "Become a Taskio" only for non-authenticated users or seekers */}
                   {(!isAuthenticated || user?.role === 'seeker') && (
-                     <Link href="/auth" className="border border-sky-900 font-bold text-sky-900 px-4 py-2 rounded-md hover:bg-sky-900 hover:text-white transition duration-500">
+                     <Link href="/auth" className="border border-sky-900 font-bold text-sky-900 px-3 md:px-4 py-2 rounded-md hover:bg-sky-900 hover:text-white transition duration-500 text-sm">
                         Become a Taskio
                      </Link>
                   )}
@@ -57,7 +57,7 @@ const Navbar = () => {
                         {isAuthenticated ? (
                            <UserMenu />
                         ) : (
-                           <ul className="hidden md:flex items-center gap-4">
+                           <ul className="hidden lg:flex items-center gap-4">
                               <Link href="/auth" className="flex items-center gap-2 hover:text-gray-900 transition">
                                  <Image src={assets.user_icon} alt="user icon" />
                                  Sign In / Sign Up
@@ -67,7 +67,7 @@ const Navbar = () => {
                      </>
                   )}
                </div>
-               <div className="md:hidden">
+               <div className="lg:hidden">
                   <button onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
                      {isMenuOpen ? <IoMdClose className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
                   </button>
@@ -76,7 +76,7 @@ const Navbar = () => {
          </div>
 
          {isMenuOpen && (
-            <div className="md:hidden bg-background border-b border-gray-300">
+            <div className="lg:hidden bg-background border-b border-gray-300">
                <div className="container px-4 py-4 flex flex-col items-center gap-4">
                   {isAuthenticated && user?.role === 'taskio' && (
                      <Link href="/dashboard" className="text-xs border px-4 py-1.5 rounded-full">

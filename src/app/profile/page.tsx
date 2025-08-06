@@ -11,6 +11,7 @@ import Image from 'next/image';
 import Footer from '@/components/Footer';
 import toast from 'react-hot-toast';
 import Navbar from '@/components/tasker/Navbar';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 export default function Profile() {
    const router = useRouter();
@@ -25,6 +26,14 @@ export default function Profile() {
    const [localImages, setLocalImages] = useState({
       profilePicture: user?.profilePicture || '',
       headerImage: user?.headerImage || '',
+   });
+   const { uploadImage } = useImageUpload();
+   const [pendingImages, setPendingImages] = useState<{
+      profilePicture: { file: File | null, preview: string | null },
+      headerImage: { file: File | null, preview: string | null }
+   }>({
+      profilePicture: { file: null, preview: null },
+      headerImage: { file: null, preview: null }
    });
 
    // Update form data when user changes
@@ -48,15 +57,16 @@ export default function Profile() {
       });
    };
 
-   const handleImageUploaded = async (imageType: 'profilePicture' | 'headerImage', imageUrl: string) => {
-      // Update local state immediately for better UX
+   const handleImageFileSelected = (imageType: 'profilePicture' | 'headerImage', file: File | null, preview: string | null) => {
+      setPendingImages(prev => ({
+         ...prev,
+         [imageType]: { file, preview }
+      }));
+      // Show preview immediately
       setLocalImages(prev => ({
          ...prev,
-         [imageType]: imageUrl
+         [imageType]: preview || (user ? user[imageType] : '')
       }));
-
-      // Refresh user data after image upload
-      await refreshUser();
    };
 
    const handleSaveProfile = async () => {
@@ -64,16 +74,29 @@ export default function Profile() {
          toast.error('Name is required');
          return;
       }
-
       setIsSaving(true);
       try {
+         // Upload images if new files are selected
+         let uploadedProfileUrl = localImages.profilePicture;
+         let uploadedHeaderUrl = localImages.headerImage;
+         if (pendingImages.profilePicture.file) {
+            uploadedProfileUrl = await uploadImage(pendingImages.profilePicture.file, { imageType: 'profilePicture' });
+         }
+         if (pendingImages.headerImage.file) {
+            uploadedHeaderUrl = await uploadImage(pendingImages.headerImage.file, { imageType: 'headerImage' });
+         }
+         // Update profile with new image URLs and name
          const response = await api.patch('/api/user/profile', {
-            name: formData.name.trim()
+            name: formData.name.trim(),
+            profilePicture: uploadedProfileUrl,
+            headerImage: uploadedHeaderUrl
          });
-
          toast.success('Profile updated successfully!');
          setIsEditing(false);
-
+         setPendingImages({
+            profilePicture: { file: null, preview: null },
+            headerImage: { file: null, preview: null }
+         });
          // Refresh user data to get updated information
          await refreshUser();
       } catch (error) {
@@ -92,6 +115,10 @@ export default function Profile() {
       setLocalImages({
          profilePicture: user?.profilePicture || '',
          headerImage: user?.headerImage || '',
+      });
+      setPendingImages({
+         profilePicture: { file: null, preview: null },
+         headerImage: { file: null, preview: null }
       });
       setIsEditing(false);
    };
@@ -120,7 +147,7 @@ export default function Profile() {
                      <ImageUpload
                         currentImage={localImages.headerImage}
                         imageType="headerImage"
-                        onImageUploaded={(imageUrl) => handleImageUploaded('headerImage', imageUrl)}
+                        onFileSelected={(file, preview) => handleImageFileSelected('headerImage', file, preview)}
                         aspectRatio="wide"
                         size="large"
                         className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl"
@@ -155,7 +182,7 @@ export default function Profile() {
                            <ImageUpload
                               currentImage={localImages.profilePicture}
                               imageType="profilePicture"
-                              onImageUploaded={(imageUrl) => handleImageUploaded('profilePicture', imageUrl)}
+                              onFileSelected={(file, preview) => handleImageFileSelected('profilePicture', file, preview)}
                               size="large"
                               className="w-full h-full"
                            />

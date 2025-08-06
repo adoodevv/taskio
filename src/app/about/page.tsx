@@ -26,7 +26,7 @@ const team = [
    {
       name: 'Bregaitha Nhyira Agyekum',
       role: 'Project Manager',
-      image: '/user.png',
+      image: '/team/bregaitha.jpg',
    },
    {
       name: 'Asuoko Reginald',

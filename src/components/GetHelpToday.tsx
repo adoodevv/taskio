@@ -18,7 +18,7 @@ const services = [
 
 const GetHelpToday = () => {
    return (
-      <div className="max-w-6xl mx-auto py-6 sm:py-10 px-2 sm:px-0">
+      <div className="max-w-6xl mx-auto py-6 sm:py-10 px-4">
          <div className='justify-between items-center flex'>
             <h2 className="text-2xl sm:text-3xl font-bold text-center">Get Help Today</h2>
             <Link href="/services" className='hover:underline group flex items-center gap-1'>
