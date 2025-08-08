@@ -241,8 +241,8 @@ const MyBookings = () => {
                                                                <span className="text-sky-600 font-semibold text-sm">
                                                                   {booking.customer.name.charAt(0).toUpperCase()}
                                                                </span>
-                                                            </div>
-                                                         )
+      </div>
+   )
                                                       )}
                                                    </div>
                                                    <span className="text-sm text-gray-600">

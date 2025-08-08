@@ -31,12 +31,12 @@ const team = [
    {
       name: 'Asuoko Reginald',
       role: 'Database Administrator',
-      image: '/user.png',
+      image: '/team/reginald.jpg',
    },
    {
       name: 'Sarfo Nana Kofi Asante',
       role: 'DevOps Engineer',
-      image: '/user.png',
+      image: '/team/sarfo.jpg',
    },
    {
       name: 'Castel David Kwame',

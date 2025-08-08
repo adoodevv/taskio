@@ -92,20 +92,20 @@ export async function POST(request: NextRequest) {
          });
       } else {
          // Update user profile/header image
-         const updateData: any = {};
-         updateData[imageType] = imageUrl;
+      const updateData: any = {};
+      updateData[imageType] = imageUrl;
 
-         const updatedUser = await User.findByIdAndUpdate(
-            decoded.userId,
-            updateData,
-            { new: true, select: '-password' }
-         );
+      const updatedUser = await User.findByIdAndUpdate(
+         decoded.userId,
+         updateData,
+         { new: true, select: '-password' }
+      );
 
-         return NextResponse.json({
-            message: 'Image uploaded successfully',
-            user: updatedUser,
-            imageUrl
-         });
+      return NextResponse.json({
+         message: 'Image uploaded successfully',
+         user: updatedUser,
+         imageUrl
+      });
       }
 
    } catch (error) {

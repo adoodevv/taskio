@@ -344,7 +344,7 @@ const DashboardBookings = () => {
                                        <p className="text-gray-600">{booking.contactPhone}</p>
                                        <p className="text-gray-600">{booking.contactEmail}</p>
                                     </div>
-                                    <div>
+      <div>
                                        <span className="font-medium text-gray-900">Address:</span>
                                        <p className="text-gray-600">
                                           {booking.address}<br />
@@ -429,7 +429,7 @@ const DashboardBookings = () => {
                   </div>
                )}
             </div>
-         </div>
+      </div>
       </ProtectedRoute>
    );
 };

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import Image from 'next/image';
-import { FaSearch, FaFilter, FaStar, FaMapMarkerAlt, FaClock, FaDollarSign } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaMapMarkerAlt, FaClock, FaDollarSign } from 'react-icons/fa';
 
 interface Taskio {
    _id: string;
