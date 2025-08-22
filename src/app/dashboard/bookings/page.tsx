@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useApi } from '@/hooks/useApi';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import Image from 'next/image';
 import { FaCalendar, FaClock, FaMapMarkerAlt, FaDollarSign, FaUser, FaTools, FaCheckCircle, FaTimes, FaSpinner } from 'react-icons/fa';
 import toast from 'react-hot-toast';
@@ -62,11 +60,30 @@ const DashboardBookings = () => {
    const fetchBookings = async () => {
       try {
          setIsLoading(true);
+
          const response = await api.get('/api/bookings?role=taskio');
-         setBookings(response.bookings);
+
+         if (response.bookings) {
+            setBookings(response.bookings);
+         } else {
+            console.error('No bookings array in response:', response);
+            toast.error('Invalid response format from server');
+         }
       } catch (error) {
          console.error('Error fetching bookings:', error);
-         toast.error('Failed to load bookings');
+
+         // More detailed error handling
+         if (error instanceof Error) {
+            if (error.message.includes('Session expired')) {
+               toast.error('Session expired. Please login again.');
+            } else if (error.message.includes('Access denied')) {
+               toast.error('Access denied. You do not have permission to view bookings.');
+            } else {
+               toast.error(`Failed to load bookings: ${error.message}`);
+            }
+         } else {
+            toast.error('Failed to load bookings');
+         }
       } finally {
          setIsLoading(false);
       }
@@ -344,7 +361,7 @@ const DashboardBookings = () => {
                                        <p className="text-gray-600">{booking.contactPhone}</p>
                                        <p className="text-gray-600">{booking.contactEmail}</p>
                                     </div>
-      <div>
+                                    <div>
                                        <span className="font-medium text-gray-900">Address:</span>
                                        <p className="text-gray-600">
                                           {booking.address}<br />
@@ -429,7 +446,7 @@ const DashboardBookings = () => {
                   </div>
                )}
             </div>
-      </div>
+         </div>
       </ProtectedRoute>
    );
 };

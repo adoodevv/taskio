@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import Service from '@/models/Service';
 import { verifyToken, extractTokenFromHeader } from '@/lib/auth';
+import mongoose from 'mongoose';
 
 // GET - Fetch bookings for the authenticated user
 export async function GET(request: NextRequest) {
@@ -35,12 +36,19 @@ export async function GET(request: NextRequest) {
 
       let query: any = {};
 
-      if (role === 'taskio') {
-         // Fetch bookings where user is the taskio
-         query.taskioId = decoded.userId;
-      } else {
-         // Fetch bookings where user is the customer (default)
-         query.customerId = decoded.userId;
+      try {
+         if (role === 'taskio') {
+            // Fetch bookings where user is the taskio
+            query.taskioId = new mongoose.Types.ObjectId(decoded.userId);
+         } else {
+            // Fetch bookings where user is the customer (default)
+            query.customerId = new mongoose.Types.ObjectId(decoded.userId);
+         }
+      } catch (objectIdError) {
+         return NextResponse.json(
+            { error: 'Invalid user ID format' },
+            { status: 400 }
+         );
       }
 
       // Fetch bookings with populated service and user information
@@ -51,41 +59,58 @@ export async function GET(request: NextRequest) {
          .sort({ createdAt: -1 })
          .lean();
 
-      // Transform the data
-      const transformedBookings = bookings.map(booking => ({
-         _id: booking._id,
-         service: {
-            _id: booking.serviceId._id,
-            title: booking.serviceId.title,
-            category: booking.serviceId.category,
-            serviceImage: booking.serviceId.serviceImage,
-         },
-         taskio: {
-            _id: booking.taskioId._id,
-            name: booking.taskioId.name,
-            profilePicture: booking.taskioId.profilePicture,
-         },
-         customer: {
-            _id: booking.customerId._id,
-            name: booking.customerId.name,
-            profilePicture: booking.customerId.profilePicture,
-         },
-         price: booking.price,
-         quantity: booking.quantity,
-         totalPrice: booking.totalPrice,
-         bookingDate: booking.bookingDate,
-         bookingTime: booking.bookingTime,
-         address: booking.address,
-         city: booking.city,
-         state: booking.state,
-         zipCode: booking.zipCode,
-         specialInstructions: booking.specialInstructions,
-         contactPhone: booking.contactPhone,
-         contactEmail: booking.contactEmail,
-         status: booking.status,
-         createdAt: booking.createdAt,
-         updatedAt: booking.updatedAt,
-      }));
+      // Transform the data with error handling
+      const transformedBookings = bookings.map(booking => {
+         try {
+            // Check if required populated fields exist
+            if (!booking.serviceId || typeof booking.serviceId === 'string') {
+               return null;
+            }
+            if (!booking.taskioId || typeof booking.taskioId === 'string') {
+               return null;
+            }
+            if (!booking.customerId || typeof booking.customerId === 'string') {
+               return null;
+            }
+
+            return {
+               _id: booking._id,
+               service: {
+                  _id: booking.serviceId._id,
+                  title: booking.serviceId.title,
+                  category: booking.serviceId.category,
+                  serviceImage: booking.serviceId.serviceImage,
+               },
+               taskio: {
+                  _id: booking.taskioId._id,
+                  name: booking.taskioId.name,
+                  profilePicture: booking.taskioId.profilePicture,
+               },
+               customer: {
+                  _id: booking.customerId._id,
+                  name: booking.customerId.name,
+                  profilePicture: booking.customerId.profilePicture,
+               },
+               price: booking.price,
+               quantity: booking.quantity,
+               totalPrice: booking.totalPrice,
+               bookingDate: booking.bookingDate,
+               bookingTime: booking.bookingTime,
+               address: booking.address,
+               city: booking.city,
+               state: booking.state,
+               zipCode: booking.zipCode,
+               specialInstructions: booking.specialInstructions,
+               contactPhone: booking.contactPhone,
+               contactEmail: booking.contactEmail,
+               status: booking.status,
+               createdAt: booking.createdAt,
+               updatedAt: booking.updatedAt,
+            };
+         } catch (transformError) {
+            return null;
+         }
+      }).filter(booking => booking !== null); // Remove any null bookings
 
       return NextResponse.json(
          {
